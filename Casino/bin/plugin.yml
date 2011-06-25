@@ -5,3 +5,21 @@ commands:
   Blackjack:
     description: takes you into a game of blackjack
     usage: /blackjack
+  Bet:
+    description: bets
+    usage:/bet <amount>
+  Cash:
+    description: shows player's money
+    usage:/cash
+  Stay:
+    description:stays
+    usage:/stay
+  Hit:
+    description:hits
+    usage:/hit
+  Double:
+    description:double down
+    usage:/double
+  Leave:
+    description:removes the player from the game
+    usage:/leave

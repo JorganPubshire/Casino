@@ -38,7 +38,7 @@ public class Main extends JavaPlugin{
 		pm.registerEvent(Event.Type.PLUGIN_DISABLE, new PluginListener(this), Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLUGIN_ENABLE, new PluginListener(this), Priority.Monitor, this);
 		System.out.println("Cards is working properly!");
-		
+
 	}
 
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String [] args){
@@ -57,6 +57,60 @@ public class Main extends JavaPlugin{
 			}
 
 		}
+		else if(cmdLabel.equalsIgnoreCase("hit")){
+			if(turn != null && player.equals(turn.getPlayer())){
+				turn.getPlayer().sendMessage(ChatColor.GOLD + "hit");
+				turn.giveCard(blackjack.hit());
+				playerTurn(turn);
+			}
+		}
+		else if(cmdLabel.equalsIgnoreCase("stay")){
+			if(turn != null && player.equals(turn.getPlayer())){
+				turn.getPlayer().sendMessage(ChatColor.GOLD + "stay");
+				blackjack.stay(turn);
+				game();
+			}
+		}
+		else if(cmdLabel.equalsIgnoreCase("leave")){
+			if(blackjack.containsPlayer(player)){
+				leaveQueue.add(blackjack.match(player));
+				player.sendMessage("You will be removed from the game at the end of this hand...");
+			}
+		}
+		else if(cmdLabel.equalsIgnoreCase("double")){
+			if(turn != null && player.equals(turn.getPlayer())){
+				int bet = blackjack.bets.get(turn);
+				if(turn.getCash() >= bet){
+					turn.getPlayer().sendMessage(ChatColor.GOLD + "double down");
+					turn.takeCash(bet);
+					blackjack.bets.put(turn,bet*2);
+					turn.giveCard(blackjack.hit());
+					blackjack.stay(turn);
+					game();
+				}
+				else{
+					turn.getPlayer().sendMessage(ChatColor.RED + "You don't have enough money to do that!");
+				}
+			}
+		}
+		else if(cmdLabel.equalsIgnoreCase("bet")){
+			if(better != null && player.equals(better.getPlayer()) && betting){
+				int bet = Integer.parseInt(args[0]);
+				better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
+				boolean betted = bet(better,bet);
+				if(betted){
+					betting();
+				}
+				else{
+					player.sendMessage(ChatColor.RED + "You don't have enough money for that!");
+				}
+			}
+		}
+		else if(cmdLabel.equalsIgnoreCase("cash")){
+			if(blackjack.containsPlayer(player)){
+				player.sendMessage("You have " + blackjack.match(player).getCash() + " dollars.");
+			}
+		}
 		return true;
 	}
 
@@ -64,12 +118,12 @@ public class Main extends JavaPlugin{
 		usingIconomy = true;
 		blackjack.usingIconomy = true;
 	}
-	
+
 	public void unuseIconomy(){
 		usingIconomy = false;
 		blackjack.usingIconomy = false;
 	}
-	
+
 	public void addPlayer(Player player){
 		boolean allow;
 		if(usingIconomy){
@@ -124,7 +178,7 @@ public class Main extends JavaPlugin{
 			return;
 		}
 		blackjack.removeWaiting(better);
-		better.getPlayer().sendMessage(ChatColor.YELLOW + "Please place your bet. (say \"bet <amount>\")");
+		better.getPlayer().sendMessage(ChatColor.YELLOW + "Please place your bet. (You have " + better.getCash() + " dollars)");
 	}
 
 	public boolean bet(CardPlayer player, int bet){
@@ -182,7 +236,7 @@ public class Main extends JavaPlugin{
 			game();
 		}
 	}
-	
+
 	public void removeBroke(){
 		for(CardPlayer player : blackjack.getCardPlayers()){
 			if(player.getCash() == 0){
