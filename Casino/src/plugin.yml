@@ -1,6 +1,6 @@
 name: Casino
 main: Main
-version: 1.0
+version: v1.1
 commands:
   Blackjack:
     description: takes you into a game of blackjack
