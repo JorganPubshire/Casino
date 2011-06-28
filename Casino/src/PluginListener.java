@@ -13,6 +13,9 @@ public class PluginListener extends ServerListener {
 		plugin = instance;
 	}
 
+	/**
+	 * Utilizes iConomy if it is enabled
+	 */
 	public void onPluginEnable(PluginEnableEvent event){
 		if (plugin.iconomy == null) {
             Plugin iConomy = plugin.getServer().getPluginManager().getPlugin("iConomy");
@@ -28,6 +31,9 @@ public class PluginListener extends ServerListener {
         }
 	}
 	
+	/**
+	 * Forces the plugin to stop using iConomy if it is disabled
+	 */
 	public void onPluginDisable(PluginDisableEvent event){
 		if(event.getPlugin().getDescription().getName().equals("iConomy")){
 			plugin.iconomy = null;

@@ -16,6 +16,13 @@ import com.iConomy.iConomy;
 import Base.CardPlayer;
 import Games.BlackJack.*;
 
+/**
+ * The main class of the plugin
+ * Makes most method calls (needs cleaning/organizing)
+ * 
+ * @author JorganPubshire
+ *
+ */
 public class Main extends JavaPlugin{
 	BlackJack blackjack = new BlackJack();
 	CardPlayer turn;
@@ -30,20 +37,26 @@ public class Main extends JavaPlugin{
 	File data = new File("plugins/Casino/config.yml");
 	Configuration config = new Configuration(data);
 
-	@Override
+	/**
+	 * Code called before plugin is disabled
+	 */
 	public void onDisable() {
-		// TODO Auto-generated method stub
+		System.out.println("Cards is disabled!");
 
 	}
 
-	@Override
+	/**
+	 * Code called after plugin is enabled
+	 */
 	public void onEnable() {
+		System.out.println("Cards is working properly!");
+		//event registry
 		pm = getServer().getPluginManager();
 		pm.registerEvent(Event.Type.PLAYER_CHAT, new ChatListener(this), Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLUGIN_DISABLE, new PluginListener(this), Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLUGIN_ENABLE, new PluginListener(this), Priority.Monitor, this);
-		System.out.println("Cards is working properly!");
 
+		//creates Casino folder and config.yml file
 		new File("plugins/Casino").mkdir();
 		if(!data.exists()){
 			try{
@@ -56,7 +69,7 @@ public class Main extends JavaPlugin{
 		}
 
 		config.load();
-
+		// records data to new config file
 		if(config.getKeys("slots") == null){
 			config.setProperty("slots.1.world", getServer().getWorlds().get(0).getName());
 			config.setProperty("slots.1.x", 0);
@@ -90,12 +103,16 @@ public class Main extends JavaPlugin{
 			config.setProperty("slots.5.yaw", 0);
 			config.save();
 		}
-
+		//loads config data into plugin
 		refresh();
 
 	}
 
+	/**
+	 * Loads config data into plugin memory
+	 */
 	public void refresh(){
+		//forms the 5 locations and stores them
 		for(int i = 1; i<6;i++){
 			Location loc;
 			double x = config.getDouble("slots."+i+".x", 0);
@@ -107,10 +124,17 @@ public class Main extends JavaPlugin{
 			blackjack.slots[i-1] = loc;
 		}
 
+		//reloads the locations into the plugin
 		blackjack.init();
 
 	}
 	
+	/**
+	 * Saves the player's current location as a blackjack slot (Admin command)
+	 * 
+	 * @param loc
+	 * @param slot
+	 */
 	public void saveLoc(Location loc, int slot){
 		World world = loc.getWorld();
 		double x = loc.getX();
@@ -119,6 +143,7 @@ public class Main extends JavaPlugin{
 		float pitch = loc.getPitch();
 		float yaw = loc.getYaw();
 		
+		//sets config file data
 		config.load();
 		config.setProperty("slots."+slot+".world", world.getName());
 		config.setProperty("slots."+slot+".x", x);
@@ -128,11 +153,16 @@ public class Main extends JavaPlugin{
 		config.setProperty("slots."+slot+".yaw", yaw);
 		config.save();
 		
+		//reloads slot data
 		refresh();
 	}
 
+	/**
+	 * Handles player issued commands
+	 */
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String [] args){
 		Player player = (Player) sender;
+		//blackjack
 		if(cmdLabel.equalsIgnoreCase("blackjack")){
 			if(args.length == 0){
 				if(blackjack.getPlayers().contains(player)){
@@ -148,6 +178,10 @@ public class Main extends JavaPlugin{
 				}
 			}
 			else{
+				if(blackjack.getPlayers().size()!=0){
+					player.sendMessage(ChatColor.RED + "That cannot be done while a game is in progress!");
+					return true;
+				}
 				switch(Integer.parseInt(args[0])){
 					case 1: saveLoc(player.getLocation(),1); return true;
 					case 2: saveLoc(player.getLocation(),2); return true;
@@ -158,6 +192,7 @@ public class Main extends JavaPlugin{
 			}
 
 		}
+		//hit
 		else if(cmdLabel.equalsIgnoreCase("hit")){
 			if(turn != null && player.equals(turn.getPlayer())){
 				turn.getPlayer().sendMessage(ChatColor.GOLD + "hit");
@@ -165,6 +200,7 @@ public class Main extends JavaPlugin{
 				playerTurn(turn);
 			}
 		}
+		//stay
 		else if(cmdLabel.equalsIgnoreCase("stay")){
 			if(turn != null && player.equals(turn.getPlayer())){
 				turn.getPlayer().sendMessage(ChatColor.GOLD + "stay");
@@ -172,12 +208,14 @@ public class Main extends JavaPlugin{
 				game();
 			}
 		}
+		//leave
 		else if(cmdLabel.equalsIgnoreCase("leave")){
 			if(blackjack.containsPlayer(player)){
 				leaveQueue.add(blackjack.match(player));
 				player.sendMessage("You will be removed from the game at the end of this hand...");
 			}
 		}
+		//double down
 		else if(cmdLabel.equalsIgnoreCase("double")){
 			if(turn != null && player.equals(turn.getPlayer())){
 				int bet = blackjack.bets.get(turn);
@@ -194,6 +232,7 @@ public class Main extends JavaPlugin{
 				}
 			}
 		}
+		//bet
 		else if(cmdLabel.equalsIgnoreCase("bet")){
 			if(better != null && player.equals(better.getPlayer()) && betting){
 				int bet = Integer.parseInt(args[0]);
@@ -207,6 +246,7 @@ public class Main extends JavaPlugin{
 				}
 			}
 		}
+		//money/cash
 		else if(cmdLabel.equalsIgnoreCase("cash")){
 			if(blackjack.containsPlayer(player)){
 				player.sendMessage("You have " + blackjack.match(player).getCash() + " dollars.");
@@ -215,18 +255,30 @@ public class Main extends JavaPlugin{
 		return true;
 	}
 
+	/**
+	 * Enables iConomy use
+	 */
 	public void useIconomy(){
 		usingIconomy = true;
 		blackjack.usingIconomy = true;
 	}
 
+	/**
+	 * Disables iConomy use
+	 */
 	public void unuseIconomy(){
 		usingIconomy = false;
 		blackjack.usingIconomy = false;
 	}
 
+	/**
+	 * Adds a player to the game
+	 * 
+	 * @param player
+	 */
 	public void addPlayer(Player player){
 		boolean allow;
+		//uses iConomy
 		if(usingIconomy){
 			allow = blackjack.addPlayer(player,iconomy);
 		}
@@ -235,14 +287,19 @@ public class Main extends JavaPlugin{
 		}
 		if(allow){
 			player.sendMessage("You have been added to the game.");
+			//begins betting phase
 			prepBets();
 			betting();
 		}
 	}
 
+	/**
+	 * Adds multiple players before a hand begins
+	 */
 	public void addPlayers(){
 		for(Player player : joinQueue){
 			boolean allow;
+			//uses iConomy
 			if(usingIconomy){
 				allow = blackjack.addPlayer(player,iconomy);
 			}
@@ -250,31 +307,47 @@ public class Main extends JavaPlugin{
 				allow = blackjack.addPlayer(player);
 			}
 			if(allow){
+				//records joined players
 				joined.add(player);
 				player.sendMessage("You have been added to the game.");
 			}
 		}
+		//removes joined players from the waiting queue
 		for(Player player : joined){
 			joinQueue.remove(player);
 		}
 		joined.clear();
 	}
 
+	/**
+	 * Removes multiple players before a hand begins
+	 */
 	public void removePlayers(){
 		for(CardPlayer player : leaveQueue){
 			blackjack.removePlayer(player);
 		}
 	}
 
+	/**
+	 * Pre-betting prep
+	 */
 	public void prepBets(){
 		blackjack.prepBets();
 	}
 
+	/**
+	 * Cycles through players and takes bets
+	 */
 	public void betting(){
+		//enables betting
 		betting = true;
+		//progresses the betting to the next player
 		better = blackjack.next();
+		//begins the game if there are no players left to bet
 		if(better == null){
+			//disables betting
 			betting = false;
+			//starts game
 			startGame();
 			return;
 		}
@@ -282,6 +355,13 @@ public class Main extends JavaPlugin{
 		better.getPlayer().sendMessage(ChatColor.YELLOW + "Please place your bet. (You have " + better.getCash() + " dollars)");
 	}
 
+	/**
+	 * Places the player's bet
+	 * 
+	 * @param player
+	 * @param bet
+	 * @return
+	 */
 	public boolean bet(CardPlayer player, int bet){
 		if(player.getCash() >= bet){
 			player.takeCash(bet);
@@ -293,15 +373,24 @@ public class Main extends JavaPlugin{
 		}
 	}
 
+	/**
+	 * Begins the gaming cycle
+	 */
 	public void startGame(){
 		blackjack.startHand();
 		game();
 	}
 
+	/**
+	 * Cycles through the players, takes commands, and performs commands without blocking other plugins
+	 */
 	public void game(){
+		//progresses gameplay to the next player
 		turn = blackjack.next();
+		//if there are no player waiting for their turn, gameplay progresses to the dealer
 		if(turn == null){
 			blackjack.dealerTurn();
+			//the hand ends after the dealer's turn
 			endGame();
 			return;
 		}
@@ -311,17 +400,31 @@ public class Main extends JavaPlugin{
 		playerTurn(turn);
 	}
 
+	/**
+	 * Performs post-hand actions
+	 */
 	public void endGame(){
+		//pays winners
 		blackjack.payout();
+		//notify players
 		blackjack.finish();
+		//resets values
 		blackjack.endHand();
+		//restarts the betting/gaming cycle
 		restart();
 	}
 
+	/**
+	 * Restarts the betting/gaming cycle
+	 */
 	public void restart(){
+		//removes players with no money
 		removeBroke();
+		//remove players the want to leave
 		removePlayers();
+		//add players that wish to join
 		addPlayers();
+		//begins gameplay if there are players
 		if(blackjack.getPlayers().size()>0){
 			prepBets();
 			betting();
@@ -331,13 +434,23 @@ public class Main extends JavaPlugin{
 		}
 	}
 
+	/**
+	 * Asynchronously loops for the player to take their turn
+	 * 
+	 * @param player
+	 */
 	public void playerTurn(CardPlayer player){
+		//allows the player to execute commands until they bust or stay
 		boolean good = blackjack.validate(player);
+		//advances gameplay after a bust
 		if(!good){
 			game();
 		}
 	}
 
+	/**
+	 * Adds players with no money to the leave queue
+	 */
 	public void removeBroke(){
 		for(CardPlayer player : blackjack.getCardPlayers()){
 			if(player.getCash() == 0){

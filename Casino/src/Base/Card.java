@@ -1,5 +1,12 @@
 package Base;
 
+/**
+ * 
+ * @author JorganPubshire
+ * 
+ * A lightweight card object
+ *
+ */
 public class Card {
 	private String suit;
 	private int value;
@@ -11,6 +18,9 @@ public class Card {
 		giveName();
 	}
 	
+	/*
+	 * getter and setter methods
+	 */
 	public String getSuit(){
 		return suit;
 	}
@@ -44,7 +54,6 @@ public class Card {
 		case 13: name = "King"; break;
 		}
 	}
-	
 	
 	public String toString(){		
 		String str = "The " + name + " of " + suit;

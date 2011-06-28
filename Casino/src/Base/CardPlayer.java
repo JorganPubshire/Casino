@@ -5,6 +5,12 @@ import java.util.ArrayList;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+/**
+ * A CardPlayer object to hold a player's card game data
+ * 
+ * @author JorganPubshire
+ *
+ */
 public class CardPlayer {
 	public ArrayList<Card> hand = new ArrayList<Card>();
 	int cash = 0;
@@ -21,6 +27,9 @@ public class CardPlayer {
 		}
 	}
 
+	/*
+	 * getter and setter methods
+	 */
 	public Location getOrigin(){
 		return loc;
 	}
