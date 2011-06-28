@@ -1,25 +1,25 @@
 name: Casino
 main: Main
-version: v1.1
+version: v1.2
 commands:
   Blackjack:
     description: takes you into a game of blackjack
     usage: /blackjack
   Bet:
     description: bets
-    usage:/bet <amount>
+    usage: /bet <amount>
   Cash:
     description: shows player's money
-    usage:/cash
+    usage: /cash
   Stay:
-    description:stays
-    usage:/stay
+    description: stays
+    usage: /stay
   Hit:
-    description:hits
-    usage:/hit
+    description: hits
+    usage: /hit
   Double:
-    description:double down
-    usage:/double
+    description: double down
+    usage: /double
   Leave:
-    description:removes the player from the game
-    usage:/leave
+    description: removes the player from the game
+    usage: /leave

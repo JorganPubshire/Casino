@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import Base.Card;
 import Base.Deck;
@@ -23,6 +24,15 @@ public class BlackJack{
 	int goal = 0;
 	ArrayList<CardPlayer> waiting;
 	public boolean usingIconomy = false;
+	public Location[] slots = new Location[5];
+	public HashMap<Location, CardPlayer> slotStatus = new HashMap<Location, CardPlayer>();
+	
+	public void init(){
+		slotStatus.clear();
+		for(Location loc : slots){
+			slotStatus.put(loc, null);
+		}
+	}
 	
 	public boolean containsPlayer(Player player){
 		return playerNames.contains(player);
@@ -127,6 +137,7 @@ public class BlackJack{
 	public boolean addPlayer(CardPlayer name){
 		if(!players.contains(name)&&players.size() < 5){
 			players.add(name);
+			tpIn(name);
 			return true;
 		}
 		else{
@@ -134,10 +145,34 @@ public class BlackJack{
 		}
 	}
 	
+	public void tpIn(CardPlayer player){
+		for(Location loc : slots){
+			if(slotStatus.get(loc) == null){
+				player.getPlayer().teleport(loc);
+				slotStatus.put(loc, player);
+				return;
+			}
+		}
+		player.getPlayer().sendMessage(ChatColor.RED + "No open slots!");
+	}
+	
+	public void tpOut(CardPlayer player){
+		if(slotStatus.containsValue(player)){
+			for(Location loc : slots){
+				if(slotStatus.get(loc).equals(player)){
+					slotStatus.put(loc, null);
+					player.getPlayer().teleport(player.getOrigin());
+					return;
+				}
+			}
+		}
+	}
+	
 	public void removePlayer(CardPlayer name){
 		if(players.contains(name)){
 			players.remove(name);
 			playerNames.remove(name.getPlayer());
+			tpOut(name);
 		}
 		if(usingIconomy){
 			Holdings money = iConomy.getAccount(name.getPlayer().getName()).getHoldings();

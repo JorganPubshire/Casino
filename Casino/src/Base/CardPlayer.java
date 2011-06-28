@@ -2,6 +2,7 @@ package Base;
 
 import java.util.ArrayList;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class CardPlayer {
@@ -9,45 +10,53 @@ public class CardPlayer {
 	int cash = 0;
 	String game = "";
 	Player player;
-	
+	Location loc;
+
 	public  CardPlayer(int money, String cardgame, Player $player){
 		player = $player;
 		cash = money;
 		game = cardgame;
+		if(player != null){
+			loc = player.getLocation();
+		}
 	}
-	
+
+	public Location getOrigin(){
+		return loc;
+	}
+
 	public int getCash(){
 		return cash;
 	}
-	
+
 	public void setCash(int amt){
 		cash = amt;
 	}
-	
+
 	public String getGame(){
 		return game;
 	}
-	
+
 	public Player getPlayer(){
 		return player;
 	}
-	
+
 	public ArrayList<Card> getHand(){
 		return hand;
 	}
-	
+
 	public void clearHand(){
 		hand.clear();
 	}
-	
+
 	public void setHand(ArrayList<Card> cards){
 		hand = cards;
 	}
-	
+
 	public void giveCard(Card card){
 		hand.add(card);
 	}
-	
+
 	public void giveCash(int money){
 		cash += money;
 	}

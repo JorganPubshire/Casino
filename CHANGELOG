@@ -1,5 +1,12 @@
 CHANGELOG:
+
 v1.0:
 First release
+
 v1.1:
 Added /hit, /stay, /double, /bet, /leave, /cash
+
+v1.2:
+Added teleportation system (not yet fully tested)
+Added config file
+Tweaked some display items
