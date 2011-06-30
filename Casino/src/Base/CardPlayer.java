@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import com.iConomy.iConomy;
+
 /**
  * A CardPlayer object to hold a player's card game data
  * 
@@ -17,6 +19,7 @@ public class CardPlayer {
 	String game = "";
 	Player player;
 	Location loc;
+	double initialAmt = 0;
 
 	public  CardPlayer(int money, String cardgame, Player $player){
 		player = $player;
@@ -24,6 +27,7 @@ public class CardPlayer {
 		game = cardgame;
 		if(player != null){
 			loc = player.getLocation();
+			initialAmt = iConomy.getAccount(player.getName()).getHoldings().balance();
 		}
 	}
 
@@ -72,5 +76,9 @@ public class CardPlayer {
 
 	public void takeCash(int money) {
 		cash -= money;
+	}
+	
+	public double getInitial(){
+		return initialAmt;
 	}
 }

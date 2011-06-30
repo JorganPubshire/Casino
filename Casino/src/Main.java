@@ -128,7 +128,7 @@ public class Main extends JavaPlugin{
 		blackjack.init();
 
 	}
-	
+
 	/**
 	 * Saves the player's current location as a blackjack slot (Admin command)
 	 * 
@@ -142,7 +142,7 @@ public class Main extends JavaPlugin{
 		double z = loc.getZ();
 		float pitch = loc.getPitch();
 		float yaw = loc.getYaw();
-		
+
 		//sets config file data
 		config.load();
 		config.setProperty("slots."+slot+".world", world.getName());
@@ -152,7 +152,7 @@ public class Main extends JavaPlugin{
 		config.setProperty("slots."+slot+".pitch", pitch);
 		config.setProperty("slots."+slot+".yaw", yaw);
 		config.save();
-		
+
 		//reloads slot data
 		refresh();
 	}
@@ -161,6 +161,11 @@ public class Main extends JavaPlugin{
 	 * Handles player issued commands
 	 */
 	public boolean onCommand(CommandSender sender, Command cmd, String cmdLabel, String [] args){
+		if(sender instanceof Player){
+		}
+		else{
+			return false;
+		}
 		Player player = (Player) sender;
 		//blackjack
 		if(cmdLabel.equalsIgnoreCase("blackjack")){
@@ -170,8 +175,15 @@ public class Main extends JavaPlugin{
 					return true;
 				}
 				if(blackjack.getPlayers().size()>0){
-					joinQueue.add(player);
-					player.sendMessage("There is a game in progress, you will be added to the game at the end of the next hand.");
+					if(iConomy.getAccount(player.getName()).getHoldings().balance() > 0){
+						if(!joinQueue.contains(player)){
+							joinQueue.add(player);
+						}
+						player.sendMessage("There is a game in progress, you will be added to the game at the end of the next hand.");
+					}
+					else{
+						player.sendMessage(ChatColor.RED + "You don't have any money!");
+					}
 				}
 				else{
 					addPlayer(player);
@@ -183,11 +195,11 @@ public class Main extends JavaPlugin{
 					return true;
 				}
 				switch(Integer.parseInt(args[0])){
-					case 1: saveLoc(player.getLocation(),1); return true;
-					case 2: saveLoc(player.getLocation(),2); return true;
-					case 3: saveLoc(player.getLocation(),3); return true;
-					case 4: saveLoc(player.getLocation(),4); return true;
-					case 5: saveLoc(player.getLocation(),5); return true;
+				case 1: saveLoc(player.getLocation(),1); return true;
+				case 2: saveLoc(player.getLocation(),2); return true;
+				case 3: saveLoc(player.getLocation(),3); return true;
+				case 4: saveLoc(player.getLocation(),4); return true;
+				case 5: saveLoc(player.getLocation(),5); return true;
 				}
 			}
 
@@ -236,6 +248,10 @@ public class Main extends JavaPlugin{
 		else if(cmdLabel.equalsIgnoreCase("bet")){
 			if(better != null && player.equals(better.getPlayer()) && betting){
 				int bet = Integer.parseInt(args[0]);
+				if(bet <= 0){
+					player.sendMessage(ChatColor.RED + "You must bet at least 1 dollar");
+					return true;
+				}
 				better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
 				boolean betted = bet(better,bet);
 				if(betted){
@@ -326,6 +342,7 @@ public class Main extends JavaPlugin{
 		for(CardPlayer player : leaveQueue){
 			blackjack.removePlayer(player);
 		}
+		leaveQueue.clear();
 	}
 
 	/**
@@ -366,6 +383,7 @@ public class Main extends JavaPlugin{
 		if(player.getCash() >= bet){
 			player.takeCash(bet);
 			blackjack.bets.put(player, bet);
+			bet = 0;
 			return true;
 		}
 		else{
@@ -376,7 +394,7 @@ public class Main extends JavaPlugin{
 	/**
 	 * Begins the gaming cycle
 	 */
-	public void startGame(){
+	public void startGame(){	
 		blackjack.startHand();
 		game();
 	}
@@ -453,7 +471,7 @@ public class Main extends JavaPlugin{
 	 */
 	public void removeBroke(){
 		for(CardPlayer player : blackjack.getCardPlayers()){
-			if(player.getCash() == 0){
+			if(player.getCash() <= 0){
 				leaveQueue.add(player);
 				player.getPlayer().sendMessage(ChatColor.RED + "You have no money and are being removed from the game!");
 			}

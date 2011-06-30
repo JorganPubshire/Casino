@@ -107,7 +107,9 @@ public class BlackJack{
 	 */
 	public void payout(){
 		for(CardPlayer player : winners){
-			player.giveCash(bets.get(player)*2);
+			if(players.contains(player)){
+				player.giveCash(bets.get(player)*2);
+			}
 		}
 	}
 	
@@ -184,6 +186,7 @@ public class BlackJack{
 			//checks if the player is broke
 			if(money.balance() == 0){
 				player.sendMessage(ChatColor.RED + "You don't have any money!");
+				
 				return false;
 			}
 			//adds the player to the game
@@ -254,11 +257,12 @@ public class BlackJack{
 		if(slotStatus.containsValue(player)){
 			//finds which slot the player is in
 			for(Location loc : slots){
-				if(slotStatus.get(loc).equals(player)){
+				if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
 					//removes the player from the slot
 					slotStatus.put(loc, null);
 					//returns the player to their original location
 					player.getPlayer().teleport(player.getOrigin());
+					player = null;
 					return;
 				}
 			}
@@ -282,7 +286,7 @@ public class BlackJack{
 		//awards players with their earnings if iConomy is active
 		if(usingIconomy){
 			Holdings money = iConomy.getAccount(name.getPlayer().getName()).getHoldings();
-			money.set(name.getCash());
+			money.add(name.getCash()-name.getInitial());
 		}
 	}
 	
@@ -494,6 +498,7 @@ public class BlackJack{
 				for(Card card : dealer.getHand()){
 					sum += card.getValue();
 				}
+				sum += aceBonus(dealer);
 				string += "got a " + sum + ". ";
 			}
 			//player wins

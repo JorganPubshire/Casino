@@ -10,3 +10,13 @@ v1.2:
 Added teleportation system (not yet fully tested)
 Added config file
 Tweaked some display items
+
+v1.3:
+Major bugfixes:
+*Player's can no longer win by betting negative money and losing
+*Fixed player login error that stole money from iConomy
+*Made a minimum bet (1 dollar, config to come)
+*Dealer's 21 no longer displays as 11
+*Changed how money is handled so it no longer affects the earning of interest
+*Small amounts of organization
+*And a few small bugfixes (they were so minor that I forgot what they were)

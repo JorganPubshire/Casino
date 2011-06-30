@@ -61,6 +61,10 @@ public class ChatListener extends PlayerListener{
 			if(plugin.better != null && event.getPlayer().equals(plugin.better.getPlayer()) && plugin.betting){
 				event.setCancelled(true);
 				int bet = Integer.parseInt(event.getMessage().split(" ")[1]);
+				if(bet <= 0){
+					event.getPlayer().sendMessage(ChatColor.RED + "You must bet at least 1 dollar");
+					return;
+				}
 				plugin.better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
 				boolean betted = plugin.bet(plugin.better,bet);
 				if(betted){
