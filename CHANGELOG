@@ -22,5 +22,5 @@ Major bugfixes:
 *And a few small bugfixes (they were so minor that I forgot what they were)
 
 v1.4:
-*Added midgame leaving (still needs work)
-*Added an AI for betting and player turns (always bets 5% of player's cash and hits until 17 or higher)
+*Added midgame leaving(if you leave before betting you will automatically bet 0)
+*Added an AI for player turns (hits until 17 or higher, just like the dealer)

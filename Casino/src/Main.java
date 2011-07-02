@@ -365,8 +365,7 @@ public void prepBets(){
  * Automates the player's betting
  */
 public void bettingAI(){
-	int bet = (int) (better.getCash() * .05);
-	bet(better,bet);
+	bet(better,0);
 	betting();
 }
 
