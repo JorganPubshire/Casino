@@ -53,7 +53,14 @@ public class ChatListener extends PlayerListener{
 			if(plugin.blackjack.containsPlayer(event.getPlayer())){
 				event.setCancelled(true);
 				plugin.leaveQueue.add(plugin.blackjack.match(event.getPlayer()));
-				event.getPlayer().sendMessage("You will be removed from the game at the end of this hand...");
+				plugin.blackjack.tpOutNow(plugin.blackjack.match(event.getPlayer()));
+				if(plugin.betting && plugin.blackjack.match(event.getPlayer()).equals(plugin.better)){
+					plugin.bettingAI();
+				}
+				if(!plugin.betting && plugin.blackjack.match(event.getPlayer()).equals(plugin.turn)){
+					plugin.playerAI(plugin.blackjack.match(event.getPlayer()));
+				}
+//				event.getPlayer().sendMessage("You will be removed from the game at the end of this hand...");
 			}
 		}
 		//bet

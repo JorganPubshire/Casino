@@ -81,4 +81,8 @@ public class CardPlayer {
 	public double getInitial(){
 		return initialAmt;
 	}
+
+	public void setOrigin(Location object) {
+		loc = object;
+	}
 }

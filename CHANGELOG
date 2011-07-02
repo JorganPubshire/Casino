@@ -1,15 +1,15 @@
 CHANGELOG:
 
 v1.0:
-First release
+*First release
 
 v1.1:
-Added /hit, /stay, /double, /bet, /leave, /cash
+*Added /hit, /stay, /double, /bet, /leave, /cash
 
 v1.2:
-Added teleportation system (not yet fully tested)
-Added config file
-Tweaked some display items
+*Added teleportation system (not yet fully tested)
+*Added config file
+*Tweaked some display items
 
 v1.3:
 Major bugfixes:
@@ -20,3 +20,7 @@ Major bugfixes:
 *Changed how money is handled so it no longer affects the earning of interest
 *Small amounts of organization
 *And a few small bugfixes (they were so minor that I forgot what they were)
+
+v1.4:
+*Added midgame leaving (still needs work)
+*Added an AI for betting and player turns (always bets 5% of player's cash and hits until 17 or higher)

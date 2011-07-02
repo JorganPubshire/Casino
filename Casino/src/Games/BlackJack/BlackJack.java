@@ -253,6 +253,8 @@ public class BlackJack{
 	 * @param player
 	 */
 	public void tpOut(CardPlayer player){
+		if(player.getOrigin() == null)
+			return;
 		//checks if the player is in a slot
 		if(slotStatus.containsValue(player)){
 			//finds which slot the player is in
@@ -262,7 +264,28 @@ public class BlackJack{
 					slotStatus.put(loc, null);
 					//returns the player to their original location
 					player.getPlayer().teleport(player.getOrigin());
-					player = null;
+					return;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Moves the player out of the blackjack area
+	 * 
+	 * @param player
+	 */
+	public void tpOutNow(CardPlayer player){
+		//checks if the player is in a slot
+		if(slotStatus.containsValue(player)){
+			//finds which slot the player is in
+			for(Location loc : slots){
+				if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
+					//removes the player from the slot
+					slotStatus.put(loc, null);
+					//returns the player to their original location
+					player.getPlayer().teleport(player.getOrigin());
+					player.setOrigin(null);
 					return;
 				}
 			}
@@ -303,11 +326,13 @@ public class BlackJack{
 	 * Reduces face card values to ten
 	 * 
 	 * @param card
+	 * @return 
 	 */
-	public void changeCard(Card card){
+	public Card changeCard(Card card){
 		if(card.getValue()>10){
 			card.setValue(10);
 		}
+		return card;
 	}
 	
 	/**
@@ -405,6 +430,8 @@ public class BlackJack{
 			sum += card.getValue();
 		}
 		sum += aceBonus(player);
+		//informs the player of their cards and current score
+		tellPlayer(player);
 		//instant blackjack
 		if(sum == 21 && player.getHand().size() == 2){
 			stay(player);
@@ -422,8 +449,6 @@ public class BlackJack{
 			return false;
 		}
 		else{
-			//informs the player of their cards and current score
-			tellPlayer(player);
 			return true;
 		}
 	}
@@ -462,7 +487,14 @@ public class BlackJack{
 			sum += card.getValue();
 		}
 		sum += aceBonus(player);
-		player.getPlayer().sendMessage(ChatColor.GREEN + string + " (" + sum + ")");
+		ChatColor color;
+		if(sum <= 21){
+			color = ChatColor.GREEN;
+		}
+		else{
+			color = ChatColor.RED;
+		}
+		player.getPlayer().sendMessage(ChatColor.GREEN + string + color + " (" + sum + ")");
 	}
 	
 	/**
@@ -571,4 +603,6 @@ public class BlackJack{
 		}
 		return null;
 	}
+	
+	
 }

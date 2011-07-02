@@ -13,6 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.config.Configuration;
 
 import com.iConomy.iConomy;
+
+import Base.Card;
 import Base.CardPlayer;
 import Games.BlackJack.*;
 
@@ -224,258 +226,309 @@ public class Main extends JavaPlugin{
 		else if(cmdLabel.equalsIgnoreCase("leave")){
 			if(blackjack.containsPlayer(player)){
 				leaveQueue.add(blackjack.match(player));
-				player.sendMessage("You will be removed from the game at the end of this hand...");
+				blackjack.tpOutNow(blackjack.match(player));
+				if(betting && blackjack.match(player).equals(better)){
+					bettingAI();
+				}				
+				if(!betting && blackjack.match(player).equals(turn)){
+				playerAI(blackjack.match(player));
 			}
+			//				player.sendMessage("You will be removed from the game at the end of this hand...");
 		}
-		//double down
-		else if(cmdLabel.equalsIgnoreCase("double")){
-			if(turn != null && player.equals(turn.getPlayer())){
-				int bet = blackjack.bets.get(turn);
-				if(turn.getCash() >= bet){
-					turn.getPlayer().sendMessage(ChatColor.GOLD + "double down");
-					turn.takeCash(bet);
-					blackjack.bets.put(turn,bet*2);
-					turn.giveCard(blackjack.hit());
-					blackjack.stay(turn);
-					game();
-				}
-				else{
-					turn.getPlayer().sendMessage(ChatColor.RED + "You don't have enough money to do that!");
-				}
-			}
-		}
-		//bet
-		else if(cmdLabel.equalsIgnoreCase("bet")){
-			if(better != null && player.equals(better.getPlayer()) && betting){
-				int bet = Integer.parseInt(args[0]);
-				if(bet <= 0){
-					player.sendMessage(ChatColor.RED + "You must bet at least 1 dollar");
-					return true;
-				}
-				better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
-				boolean betted = bet(better,bet);
-				if(betted){
-					betting();
-				}
-				else{
-					player.sendMessage(ChatColor.RED + "You don't have enough money for that!");
-				}
-			}
-		}
-		//money/cash
-		else if(cmdLabel.equalsIgnoreCase("cash")){
-			if(blackjack.containsPlayer(player)){
-				player.sendMessage("You have " + blackjack.match(player).getCash() + " dollars.");
-			}
-		}
-		return true;
 	}
-
-	/**
-	 * Enables iConomy use
-	 */
-	public void useIconomy(){
-		usingIconomy = true;
-		blackjack.usingIconomy = true;
+	//double down
+	else if(cmdLabel.equalsIgnoreCase("double")){
+		if(turn != null && player.equals(turn.getPlayer())){
+			int bet = blackjack.bets.get(turn);
+			if(turn.getCash() >= bet){
+				turn.getPlayer().sendMessage(ChatColor.GOLD + "double down");
+				turn.takeCash(bet);
+				blackjack.bets.put(turn,bet*2);
+				turn.giveCard(blackjack.hit());
+				blackjack.stay(turn);
+				game();
+			}
+			else{
+				turn.getPlayer().sendMessage(ChatColor.RED + "You don't have enough money to do that!");
+			}
+		}
 	}
-
-	/**
-	 * Disables iConomy use
-	 */
-	public void unuseIconomy(){
-		usingIconomy = false;
-		blackjack.usingIconomy = false;
+	//bet
+	else if(cmdLabel.equalsIgnoreCase("bet")){
+		if(better != null && player.equals(better.getPlayer()) && betting){
+			int bet = Integer.parseInt(args[0]);
+			if(bet <= 0){
+				player.sendMessage(ChatColor.RED + "You must bet at least 1 dollar");
+				return true;
+			}
+			better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
+			boolean betted = bet(better,bet);
+			if(betted){
+				betting();
+			}
+			else{
+				player.sendMessage(ChatColor.RED + "You don't have enough money for that!");
+			}
+		}
 	}
+	//money/cash
+	else if(cmdLabel.equalsIgnoreCase("cash")){
+		if(blackjack.containsPlayer(player)){
+			player.sendMessage("You have " + blackjack.match(player).getCash() + " dollars.");
+		}
+	}
+	return true;
+}
 
-	/**
-	 * Adds a player to the game
-	 * 
-	 * @param player
-	 */
-	public void addPlayer(Player player){
+/**
+ * Enables iConomy use
+ */
+public void useIconomy(){
+	usingIconomy = true;
+	blackjack.usingIconomy = true;
+}
+
+/**
+ * Disables iConomy use
+ */
+public void unuseIconomy(){
+	usingIconomy = false;
+	blackjack.usingIconomy = false;
+}
+
+/**
+ * Adds a player to the game
+ * 
+ * @param player
+ */
+public void addPlayer(Player player){
+	boolean allow;
+	//uses iConomy
+	if(usingIconomy){
+		allow = blackjack.addPlayer(player,iconomy);
+	}
+	else {
+		allow = blackjack.addPlayer(player);
+	}
+	if(allow){
+		player.sendMessage("You have been added to the game.");
+		//begins betting phase
+		prepBets();
+		betting();
+	}
+}
+
+/**
+ * Adds multiple players before a hand begins
+ */
+public void addPlayers(){
+	for(Player player : joinQueue){
 		boolean allow;
 		//uses iConomy
 		if(usingIconomy){
 			allow = blackjack.addPlayer(player,iconomy);
 		}
-		else {
+		else{
 			allow = blackjack.addPlayer(player);
 		}
 		if(allow){
+			//records joined players
+			joined.add(player);
 			player.sendMessage("You have been added to the game.");
-			//begins betting phase
-			prepBets();
-			betting();
 		}
 	}
-
-	/**
-	 * Adds multiple players before a hand begins
-	 */
-	public void addPlayers(){
-		for(Player player : joinQueue){
-			boolean allow;
-			//uses iConomy
-			if(usingIconomy){
-				allow = blackjack.addPlayer(player,iconomy);
-			}
-			else{
-				allow = blackjack.addPlayer(player);
-			}
-			if(allow){
-				//records joined players
-				joined.add(player);
-				player.sendMessage("You have been added to the game.");
-			}
-		}
-		//removes joined players from the waiting queue
-		for(Player player : joined){
-			joinQueue.remove(player);
-		}
-		joined.clear();
+	//removes joined players from the waiting queue
+	for(Player player : joined){
+		joinQueue.remove(player);
 	}
+	joined.clear();
+}
 
-	/**
-	 * Removes multiple players before a hand begins
-	 */
-	public void removePlayers(){
-		for(CardPlayer player : leaveQueue){
-			blackjack.removePlayer(player);
-		}
-		leaveQueue.clear();
+/**
+ * Removes multiple players before a hand begins
+ */
+public void removePlayers(){
+	for(CardPlayer player : leaveQueue){
+		blackjack.removePlayer(player);
 	}
+	leaveQueue.clear();
+}
 
-	/**
-	 * Pre-betting prep
-	 */
-	public void prepBets(){
-		blackjack.prepBets();
+/**
+ * Pre-betting prep
+ */
+public void prepBets(){
+	blackjack.prepBets();
+}
+
+/**
+ * Automates the player's betting
+ */
+public void bettingAI(){
+	int bet = (int) (better.getCash() * .05);
+	bet(better,bet);
+	betting();
+}
+
+/**
+ * Cycles through players and takes bets
+ */
+public void betting(){
+	//enables betting
+	betting = true;
+	//progresses the betting to the next player
+	better = blackjack.next();
+	//begins the game if there are no players left to bet
+	if(better == null){
+		//disables betting
+		betting = false;
+		//starts game
+		startGame();
+		return;
 	}
-
-	/**
-	 * Cycles through players and takes bets
-	 */
-	public void betting(){
-		//enables betting
-		betting = true;
-		//progresses the betting to the next player
-		better = blackjack.next();
-		//begins the game if there are no players left to bet
-		if(better == null){
-			//disables betting
-			betting = false;
-			//starts game
-			startGame();
-			return;
-		}
-		blackjack.removeWaiting(better);
+	blackjack.removeWaiting(better);
+	if(leaveQueue.contains(better)){
+		bettingAI();
+	}
+	else{
 		better.getPlayer().sendMessage(ChatColor.YELLOW + "Please place your bet. (You have " + better.getCash() + " dollars)");
 	}
+}
 
-	/**
-	 * Places the player's bet
-	 * 
-	 * @param player
-	 * @param bet
-	 * @return
-	 */
-	public boolean bet(CardPlayer player, int bet){
-		if(player.getCash() >= bet){
-			player.takeCash(bet);
-			blackjack.bets.put(player, bet);
-			bet = 0;
-			return true;
-		}
-		else{
-			return false;
-		}
+/**
+ * Places the player's bet
+ * 
+ * @param player
+ * @param bet
+ * @return
+ */
+public boolean bet(CardPlayer player, int bet){
+	if(player.getCash() >= bet){
+		player.takeCash(bet);
+		blackjack.bets.put(player, bet);
+		bet = 0;
+		return true;
 	}
-
-	/**
-	 * Begins the gaming cycle
-	 */
-	public void startGame(){	
-		blackjack.startHand();
-		game();
+	else{
+		return false;
 	}
+}
 
-	/**
-	 * Cycles through the players, takes commands, and performs commands without blocking other plugins
-	 */
-	public void game(){
-		//progresses gameplay to the next player
-		turn = blackjack.next();
-		//if there are no player waiting for their turn, gameplay progresses to the dealer
-		if(turn == null){
-			blackjack.dealerTurn();
-			//the hand ends after the dealer's turn
-			endGame();
-			return;
-		}
-		blackjack.removeWaiting(turn);
+/**
+ * Begins the gaming cycle
+ */
+public void startGame(){	
+	blackjack.startHand();
+	game();
+}
+
+/**
+ * Cycles through the players, takes commands, and performs commands without blocking other plugins
+ */
+public void game(){
+	//progresses gameplay to the next player
+	turn = blackjack.next();
+	//if there are no player waiting for their turn, gameplay progresses to the dealer
+	if(turn == null){
+		blackjack.dealerTurn();
+		//the hand ends after the dealer's turn
+		endGame();
+		return;
+	}
+	blackjack.removeWaiting(turn);
+	if(leaveQueue.contains(turn)){
+		playerAI(turn);
+	}
+	else{
 		turn.getPlayer().sendMessage(ChatColor.GREEN + "It is now your turn. Please say \"hit\" or \"stay\".");
 		turn.getPlayer().sendMessage(ChatColor.YELLOW + "The dealer has " + blackjack.dealer.getHand().get(0) + " showing." + " ("+ (blackjack.dealer.getHand().get(0).getValue() + blackjack.aceBonus(blackjack.dealer)) + ")");
 		playerTurn(turn);
 	}
+}
 
-	/**
-	 * Performs post-hand actions
-	 */
-	public void endGame(){
-		//pays winners
-		blackjack.payout();
-		//notify players
-		blackjack.finish();
-		//resets values
-		blackjack.endHand();
-		//restarts the betting/gaming cycle
-		restart();
-	}
+/**
+ * Performs post-hand actions
+ */
+public void endGame(){
+	//pays winners
+	blackjack.payout();
+	//notify players
+	blackjack.finish();
+	//resets values
+	blackjack.endHand();
+	//restarts the betting/gaming cycle
+	restart();
+}
 
-	/**
-	 * Restarts the betting/gaming cycle
-	 */
-	public void restart(){
-		//removes players with no money
-		removeBroke();
-		//remove players the want to leave
-		removePlayers();
-		//add players that wish to join
-		addPlayers();
-		//begins gameplay if there are players
-		if(blackjack.getPlayers().size()>0){
-			prepBets();
-			betting();
-		}
-		else{
-			System.out.println("NO PLAYERS");
-		}
+/**
+ * Restarts the betting/gaming cycle
+ */
+public void restart(){
+	//removes players with no money
+	removeBroke();
+	//remove players the want to leave
+	removePlayers();
+	//add players that wish to join
+	addPlayers();
+	//begins gameplay if there are players
+	if(blackjack.getPlayers().size()>0){
+		prepBets();
+		betting();
 	}
+	else{
+		System.out.println("NO PLAYERS");
+	}
+}
 
-	/**
-	 * Asynchronously loops for the player to take their turn
-	 * 
-	 * @param player
-	 */
-	public void playerTurn(CardPlayer player){
-		//allows the player to execute commands until they bust or stay
-		boolean good = blackjack.validate(player);
-		//advances gameplay after a bust
-		if(!good){
-			game();
-		}
+/**
+ * Asynchronously loops for the player to take their turn
+ * 
+ * @param player
+ */
+public void playerTurn(CardPlayer player){
+	//allows the player to execute commands until they bust or stay
+	boolean good = blackjack.validate(player);
+	//advances gameplay after a bust
+	if(!good){
+		game();
 	}
+}
 
-	/**
-	 * Adds players with no money to the leave queue
-	 */
-	public void removeBroke(){
-		for(CardPlayer player : blackjack.getCardPlayers()){
-			if(player.getCash() <= 0){
-				leaveQueue.add(player);
-				player.getPlayer().sendMessage(ChatColor.RED + "You have no money and are being removed from the game!");
-			}
+/**
+ * Adds players with no money to the leave queue
+ */
+public void removeBroke(){
+	for(CardPlayer player : blackjack.getCardPlayers()){
+		if(player.getCash() <= 0){
+			leaveQueue.add(player);
+			player.getPlayer().sendMessage(ChatColor.RED + "You have no money and are being removed from the game!");
 		}
 	}
+}
+
+/**
+ * Automates the player's turn in a similar fashion to the dealer
+ * 
+ * @param player
+ */
+public void playerAI(CardPlayer player){
+	int sum = 0;
+	for(Card card : player.getHand()){
+		sum += card.getValue();
+	}
+	sum += blackjack.aceBonus(player);
+
+	blackjack.tellPlayer(player);
+
+	if(sum < 17){
+		player.giveCard(blackjack.changeCard(blackjack.hit()));
+		playerAI(player);
+	}
+	else{
+		blackjack.stay(player);
+		game();
+	}
+}
+
 
 }
