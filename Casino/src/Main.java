@@ -34,10 +34,11 @@ public class Main extends JavaPlugin{
 	ArrayList<Player> joined = new ArrayList<Player>();
 	boolean betting = false;
 	PluginManager pm;
-	iConomy iconomy = null;
+	public iConomy iconomy = null;
 	boolean usingIconomy = false;
 	File data = new File("plugins/Casino/config.yml");
 	Configuration config = new Configuration(data);
+	int min = 0;
 
 	/**
 	 * Code called before plugin is disabled
@@ -57,6 +58,7 @@ public class Main extends JavaPlugin{
 		pm.registerEvent(Event.Type.PLAYER_CHAT, new ChatListener(this), Priority.Normal, this);
 		pm.registerEvent(Event.Type.PLUGIN_DISABLE, new PluginListener(this), Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLUGIN_ENABLE, new PluginListener(this), Priority.Monitor, this);
+		pm.registerEvent(Event.Type.PLAYER_INTERACT, new BlockListener(this), Priority.Normal, this);
 
 		//creates Casino folder and config.yml file
 		new File("plugins/Casino").mkdir();
@@ -72,6 +74,10 @@ public class Main extends JavaPlugin{
 
 		config.load();
 		// records data to new config file
+		if(config.getKeys("minBet") == null){
+			config.setProperty("minBet",1);
+		}
+		
 		if(config.getKeys("slots") == null){
 			config.setProperty("slots.1.world", getServer().getWorlds().get(0).getName());
 			config.setProperty("slots.1.x", 0);
@@ -125,7 +131,8 @@ public class Main extends JavaPlugin{
 			loc = new Location(getServer().getWorlds().get(0),x,y,z,pitch,yaw);
 			blackjack.slots[i-1] = loc;
 		}
-
+		
+		min = config.getInt("minBet", 0);
 		//reloads the locations into the plugin
 		blackjack.init();
 
@@ -227,10 +234,10 @@ public class Main extends JavaPlugin{
 			if(blackjack.containsPlayer(player)){
 				leaveQueue.add(blackjack.match(player));
 				blackjack.tpOutNow(blackjack.match(player));
-				if(betting && blackjack.match(player).equals(better)){
+				if(better != null && betting && blackjack.match(player).equals(better)){
 					bettingAI();
 				}				
-				if(!betting && blackjack.match(player).equals(turn)){
+				if(turn != null && !betting && blackjack.match(player).equals(turn)){
 				playerAI(blackjack.match(player));
 			}
 			//				player.sendMessage("You will be removed from the game at the end of this hand...");
@@ -257,8 +264,8 @@ public class Main extends JavaPlugin{
 	else if(cmdLabel.equalsIgnoreCase("bet")){
 		if(better != null && player.equals(better.getPlayer()) && betting){
 			int bet = Integer.parseInt(args[0]);
-			if(bet <= 0){
-				player.sendMessage(ChatColor.RED + "You must bet at least 1 dollar");
+			if(bet < min){
+				player.sendMessage(ChatColor.RED + "You must bet at least " + min + " dollar(s)");
 				return true;
 			}
 			better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);

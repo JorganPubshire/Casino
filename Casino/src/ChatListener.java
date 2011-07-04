@@ -54,10 +54,10 @@ public class ChatListener extends PlayerListener{
 				event.setCancelled(true);
 				plugin.leaveQueue.add(plugin.blackjack.match(event.getPlayer()));
 				plugin.blackjack.tpOutNow(plugin.blackjack.match(event.getPlayer()));
-				if(plugin.betting && plugin.blackjack.match(event.getPlayer()).equals(plugin.better)){
+				if(plugin.better != null && plugin.betting && plugin.blackjack.match(event.getPlayer()).equals(plugin.better)){
 					plugin.bettingAI();
 				}
-				if(!plugin.betting && plugin.blackjack.match(event.getPlayer()).equals(plugin.turn)){
+				if(plugin.turn != null && !plugin.betting && plugin.blackjack.match(event.getPlayer()).equals(plugin.turn)){
 					plugin.playerAI(plugin.blackjack.match(event.getPlayer()));
 				}
 //				event.getPlayer().sendMessage("You will be removed from the game at the end of this hand...");
@@ -68,8 +68,8 @@ public class ChatListener extends PlayerListener{
 			if(plugin.better != null && event.getPlayer().equals(plugin.better.getPlayer()) && plugin.betting){
 				event.setCancelled(true);
 				int bet = Integer.parseInt(event.getMessage().split(" ")[1]);
-				if(bet <= 0){
-					event.getPlayer().sendMessage(ChatColor.RED + "You must bet at least 1 dollar");
+				if(bet < plugin.min){
+					event.getPlayer().sendMessage(ChatColor.RED + "You must bet at least " + plugin.min + " dollar(s)");
 					return;
 				}
 				plugin.better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
