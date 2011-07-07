@@ -21,6 +21,9 @@ public class BlockListener extends PlayerListener{
 		Player player = event.getPlayer();
 		CardPlayer cardplayer = plugin.blackjack.match(player);
 		Block block = event.getClickedBlock();
+		if(block == null){
+			return;
+		}
 		if(plugin.blackjack.getPlayers().contains(player)){
 			if(!plugin.betting && plugin.turn != null && cardplayer.equals(plugin.turn)){
 				if(action.equals(Action.LEFT_CLICK_BLOCK)){

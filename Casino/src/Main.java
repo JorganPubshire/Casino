@@ -263,6 +263,10 @@ public class Main extends JavaPlugin{
 	//bet
 	else if(cmdLabel.equalsIgnoreCase("bet")){
 		if(better != null && player.equals(better.getPlayer()) && betting){
+			if(args.length != 1){
+				player.sendMessage("Please use that command properly. (/bet <amount>)");
+				return true;
+			}
 			int bet = Integer.parseInt(args[0]);
 			if(bet < min){
 				player.sendMessage(ChatColor.RED + "You must bet at least " + min + " dollar(s)");
