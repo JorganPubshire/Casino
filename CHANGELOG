@@ -29,3 +29,8 @@ v1.5:
 *Added minBet to config file
 *Fixed some nullPointerExceptions being thrown
 *Made Block based (not totally finished, but close)
+
+v1.6:
+*Finished Block-based gameplay
+*Minor bugfixes
+*Added a slot object

@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import Base.Card;
 import Base.Deck;
 import Base.CardPlayer;
+import Base.Slot;
 
 import com.iConomy.*;
 import com.iConomy.system.Holdings;
@@ -31,19 +31,19 @@ public class BlackJack{
 	int goal = 0;
 	ArrayList<CardPlayer> waiting;
 	public boolean usingIconomy = false;
-	public Location[] slots = new Location[5];
-	public HashMap<Location, CardPlayer> slotStatus = new HashMap<Location, CardPlayer>();
-	
+	public Slot[] slots = new Slot[5];
+	public HashMap<Slot, CardPlayer> slotStatus = new HashMap<Slot, CardPlayer>();
+
 	/**
 	 * Loads the locations from the config file into the game
 	 */
 	public void init(){
 		slotStatus.clear();
-		for(Location loc : slots){
+		for(Slot loc : slots){
 			slotStatus.put(loc, null);
 		}
 	}
-	
+
 	/**
 	 * Checks if a player is playing blackjack
 	 * @param player
@@ -59,12 +59,13 @@ public class BlackJack{
 	public void prepBets(){
 		waiting = (ArrayList<CardPlayer>) players.clone();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	/**
 	 * Performs pre-game setup
 	 */
 	public void startHand(){
+		clearSigns();
 		//creates turn list
 		waiting = (ArrayList<CardPlayer>) players.clone();
 		//checks if there is enough cards for everyone
@@ -72,7 +73,13 @@ public class BlackJack{
 		//gives players cards
 		deal();
 	}
-	
+
+	private void clearSigns() {
+		for(Slot slot:slots){
+			slot.clearSigns();
+		}
+	}
+
 	/**
 	 * Resets values after each hand
 	 */
@@ -83,7 +90,7 @@ public class BlackJack{
 		goal = 0;
 		finals.clear();
 	}
-	
+
 	/**
 	 * Removes a player from the turn list
 	 * @param player
@@ -91,7 +98,7 @@ public class BlackJack{
 	public void removeWaiting(CardPlayer player){
 		waiting.remove(player);
 	}
-	
+
 	/**
 	 * Draws one card from the deck
 	 * @return
@@ -101,7 +108,7 @@ public class BlackJack{
 		changeCard(card);
 		return card;
 	}
-	
+
 	/**
 	 * Pays winning players
 	 */
@@ -112,7 +119,7 @@ public class BlackJack{
 			}
 		}
 	}
-	
+
 	/**
 	 * Ends the player's turn
 	 * @param player
@@ -142,7 +149,7 @@ public class BlackJack{
 		//saves player's score
 		finals.put(player,sum);
 	}
-	
+
 	/**
 	 * Adds a player to the game
 	 * 
@@ -170,7 +177,7 @@ public class BlackJack{
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Adds a player to the game and uses their iConomy holdings 
 	 * 
@@ -186,7 +193,7 @@ public class BlackJack{
 			//checks if the player is broke
 			if(money.balance() == 0){
 				player.sendMessage(ChatColor.RED + "You don't have any money!");
-				
+
 				return false;
 			}
 			//adds the player to the game
@@ -207,7 +214,7 @@ public class BlackJack{
 			return false;
 		}
 	}
-	
+
 	/**
 	 * fully integrates the player into the game and physically moves them to the blackjack area
 	 * 
@@ -227,7 +234,7 @@ public class BlackJack{
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Moves the player to an available blackjack slot
 	 * 
@@ -235,18 +242,18 @@ public class BlackJack{
 	 */
 	public void tpIn(CardPlayer player){
 		//checks for open slots
-		for(Location loc : slots){
+		for(Slot loc : slots){
 			//checks if a slot is occupied
 			if(slotStatus.get(loc) == null){
 				//places the player in the slot
-				player.getPlayer().teleport(loc);
+				player.getPlayer().teleport(loc.getLoc());
 				slotStatus.put(loc, player);
 				return;
 			}
 		}
 		player.getPlayer().sendMessage(ChatColor.RED + "No open slots!");
 	}
-	
+
 	/**
 	 * Moves the player out of the blackjack area
 	 * 
@@ -258,7 +265,7 @@ public class BlackJack{
 		//checks if the player is in a slot
 		if(slotStatus.containsValue(player)){
 			//finds which slot the player is in
-			for(Location loc : slots){
+			for(Slot loc : slots){
 				if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
 					//removes the player from the slot
 					slotStatus.put(loc, null);
@@ -269,7 +276,7 @@ public class BlackJack{
 			}
 		}
 	}
-	
+
 	/**
 	 * Moves the player out of the blackjack area
 	 * 
@@ -279,7 +286,7 @@ public class BlackJack{
 		//checks if the player is in a slot
 		if(slotStatus.containsValue(player)){
 			//finds which slot the player is in
-			for(Location loc : slots){
+			for(Slot loc : slots){
 				if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
 					//removes the player from the slot
 					slotStatus.put(loc, null);
@@ -291,7 +298,7 @@ public class BlackJack{
 			}
 		}
 	}
-	
+
 	/**
 	 * Removes the player from the game
 	 * 
@@ -312,7 +319,7 @@ public class BlackJack{
 			money.add(name.getCash()-name.getInitial());
 		}
 	}
-	
+
 	/**
 	 * Checks if there is enough cards left in the deck
 	 */
@@ -321,7 +328,7 @@ public class BlackJack{
 			deck = new Deck();
 		}
 	}
-	
+
 	/**
 	 * Reduces face card values to ten
 	 * 
@@ -334,7 +341,7 @@ public class BlackJack{
 		}
 		return card;
 	}
-	
+
 	/**
 	 * gives two cards to each player and the dealer
 	 */
@@ -354,7 +361,7 @@ public class BlackJack{
 		}
 		dealer.setHand(temp);
 	}
-	
+
 	/**
 	 * Automates the dealer's turn
 	 * The dealer always hits when they have less than 17
@@ -386,7 +393,7 @@ public class BlackJack{
 			}
 		}
 	}
-		
+
 	/**
 	 * Progresses the betting/turn to the next player
 	 * 
@@ -398,7 +405,7 @@ public class BlackJack{
 		}
 		return waiting.get(0);
 	}
-	
+
 	/**
 	 * returns a list of the players in the game
 	 * 
@@ -407,7 +414,7 @@ public class BlackJack{
 	public ArrayList<Player> getPlayers(){
 		return playerNames;
 	}
-	
+
 	/**
 	 * returns a list of the players in the game
 	 * 
@@ -416,7 +423,7 @@ public class BlackJack{
 	public ArrayList<CardPlayer> getCardPlayers(){
 		return players;
 	}
-	
+
 	/**
 	 * Checks the player's cards for busting, blackjack, and hit out
 	 * 
@@ -452,7 +459,7 @@ public class BlackJack{
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Checks if the player is busted
 	 */
@@ -472,7 +479,7 @@ public class BlackJack{
 			return true;
 		}
 	}
-	
+
 	/**
 	 * Tells the player what cards they have and their current score
 	 * 
@@ -481,10 +488,22 @@ public class BlackJack{
 	public void tellPlayer(CardPlayer player){
 		String string = "You have ";
 		int sum = 0;
+		int line = 0;
+		Slot slot = null;
+		for(Slot s : slotStatus.keySet()){
+			if(slotStatus.get(s)!=null && slotStatus.get(s).equals(player)){
+				slot = s;
+				break;
+			}
+		}
 		// lists cards and totals score
 		for(Card card : player.getHand()){
 			string += card.toString() + ", ";
 			sum += card.getValue();
+			if(slot!=null){
+				slot.write(line,card.toString());
+				line++;
+			}
 		}
 		sum += aceBonus(player);
 		ChatColor color;
@@ -496,7 +515,7 @@ public class BlackJack{
 		}
 		player.getPlayer().sendMessage(ChatColor.GREEN + string + color + " (" + sum + ")");
 	}
-	
+
 	/**
 	 * Informs each player of their score, the dealer's score, and their winnings/losses for the hand
 	 */
@@ -545,7 +564,7 @@ public class BlackJack{
 			player.getPlayer().sendMessage("");
 		}
 	}
-	
+
 	/**
 	 * determines if the ace is worth 11 or 1
 	 * 
@@ -570,7 +589,7 @@ public class BlackJack{
 		}
 		return 0;
 	}
-	
+
 	/**
 	 * Checks if the player has enough money to make a bet
 	 * Executes the bet if they have enough money
@@ -588,7 +607,7 @@ public class BlackJack{
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Locates the CardPlayer linked to a player 
 	 * 
@@ -603,6 +622,6 @@ public class BlackJack{
 		}
 		return null;
 	}
-	
-	
+
+
 }

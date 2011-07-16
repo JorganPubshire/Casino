@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -16,6 +18,7 @@ import com.iConomy.iConomy;
 
 import Base.Card;
 import Base.CardPlayer;
+import Base.Slot;
 import Games.BlackJack.*;
 
 /**
@@ -39,6 +42,8 @@ public class Main extends JavaPlugin{
 	File data = new File("plugins/Casino/config.yml");
 	Configuration config = new Configuration(data);
 	int min = 0;
+	boolean console = true;
+	boolean block = false;
 
 	/**
 	 * Code called before plugin is disabled
@@ -74,6 +79,12 @@ public class Main extends JavaPlugin{
 
 		config.load();
 		// records data to new config file
+		if(config.getKeys("console-based") == null){
+			config.setProperty("console-based",true);
+		}
+		if(config.getKeys("block-based") == null){
+			config.setProperty("block-based",true);
+		}
 		if(config.getKeys("minBet") == null){
 			config.setProperty("minBet",1);
 		}
@@ -85,32 +96,62 @@ public class Main extends JavaPlugin{
 			config.setProperty("slots.1.z", 0);
 			config.setProperty("slots.1.pitch", 0);
 			config.setProperty("slots.1.yaw", 0);
+			config.setProperty("slots.1.sign1.x", 0);
+			config.setProperty("slots.1.sign1.y", 0);
+			config.setProperty("slots.1.sign1.z", 0);
+			config.setProperty("slots.1.sign2.x", 0);
+			config.setProperty("slots.1.sign2.y", 0);
+			config.setProperty("slots.1.sign2.z", 0);
 			config.setProperty("slots.2.world", getServer().getWorlds().get(0).getName());
 			config.setProperty("slots.2.x", 0);
 			config.setProperty("slots.2.y", 0);
 			config.setProperty("slots.2.z", 0);
 			config.setProperty("slots.2.pitch", 0);
 			config.setProperty("slots.2.yaw", 0);
+			config.setProperty("slots.2.sign1.x", 0);
+			config.setProperty("slots.2.sign1.y", 0);
+			config.setProperty("slots.2.sign1.z", 0);
+			config.setProperty("slots.2.sign2.x", 0);
+			config.setProperty("slots.2.sign2.y", 0);
+			config.setProperty("slots.2.sign2.z", 0);
 			config.setProperty("slots.3.world", getServer().getWorlds().get(0).getName());
 			config.setProperty("slots.3.x", 0);
 			config.setProperty("slots.3.y", 0);
 			config.setProperty("slots.3.z", 0);
 			config.setProperty("slots.3.pitch", 0);
 			config.setProperty("slots.3.yaw", 0);
+			config.setProperty("slots.3.sign1.x", 0);
+			config.setProperty("slots.3.sign1.y", 0);
+			config.setProperty("slots.3.sign1.z", 0);
+			config.setProperty("slots.3.sign2.x", 0);
+			config.setProperty("slots.3.sign2.y", 0);
+			config.setProperty("slots.3.sign2.z", 0);
 			config.setProperty("slots.4.world", getServer().getWorlds().get(0).getName());
 			config.setProperty("slots.4.x", 0);
 			config.setProperty("slots.4.y", 0);
 			config.setProperty("slots.4.z", 0);
 			config.setProperty("slots.4.pitch", 0);
 			config.setProperty("slots.4.yaw", 0);
+			config.setProperty("slots.4.sign1.x", 0);
+			config.setProperty("slots.4.sign1.y", 0);
+			config.setProperty("slots.4.sign1.z", 0);
+			config.setProperty("slots.4.sign2.x", 0);
+			config.setProperty("slots.4.sign2.y", 0);
+			config.setProperty("slots.4.sign2.z", 0);
 			config.setProperty("slots.5.world", getServer().getWorlds().get(0).getName());
 			config.setProperty("slots.5.x", 0);
 			config.setProperty("slots.5.y", 0);
 			config.setProperty("slots.5.z", 0);
 			config.setProperty("slots.5.pitch", 0);
 			config.setProperty("slots.5.yaw", 0);
-			config.save();
+			config.setProperty("slots.5.sign1.x", 0);
+			config.setProperty("slots.5.sign1.y", 0);
+			config.setProperty("slots.5.sign1.z", 0);
+			config.setProperty("slots.5.sign2.x", 0);
+			config.setProperty("slots.5.sign2.y", 0);
+			config.setProperty("slots.5.sign2.z", 0);
 		}
+		config.save();
 		//loads config data into plugin
 		refresh();
 
@@ -121,18 +162,39 @@ public class Main extends JavaPlugin{
 	 */
 	public void refresh(){
 		//forms the 5 locations and stores them
+		config.load();
 		for(int i = 1; i<6;i++){
 			Location loc;
+			Location first;
+			Location second;
+			Sign sign1 = null;
+			Sign sign2 = null;
 			double x = config.getDouble("slots."+i+".x", 0);
 			double y = config.getDouble("slots."+i+".y", 0);
 			double z = config.getDouble("slots."+i+".z", 0);
 			float pitch = new Float(config.getString("slots."+i+".pitch"));
 			float yaw = new Float(config.getString("slots."+i+".yaw"));
 			loc = new Location(getServer().getWorlds().get(0),x,y,z,pitch,yaw);
-			blackjack.slots[i-1] = loc;
+			double firstX = config.getDouble("slots."+i+".sign1.x", 0);
+			double firstY = config.getDouble("slots."+i+".sign1.y", 0);
+			double firstZ = config.getDouble("slots."+i+".sign1.z", 0);
+			double secondX = config.getDouble("slots."+i+".sign2.x", 0);
+			double secondY = config.getDouble("slots."+i+".sign2.y", 0);
+			double secondZ = config.getDouble("slots."+i+".sign2.z", 0);
+			first = new Location(loc.getWorld(), firstX,firstY,firstZ);
+			second = new Location(loc.getWorld(), secondX,secondY,secondZ);
+			if(loc.getWorld().getBlockAt(first).getState() instanceof Sign){
+				sign1 = (Sign)loc.getWorld().getBlockAt(first).getState();
+			}
+			if(loc.getWorld().getBlockAt(second).getState() instanceof Sign){
+				sign2 = (Sign)loc.getWorld().getBlockAt(second).getState();
+			}
+			blackjack.slots[i-1] = new Slot(loc,sign1,sign2);
 		}
 		
 		min = config.getInt("minBet", 0);
+		console = config.getBoolean("console-based", true);
+		block = config.getBoolean("block-based", true);
 		//reloads the locations into the plugin
 		blackjack.init();
 
@@ -166,6 +228,15 @@ public class Main extends JavaPlugin{
 		refresh();
 	}
 
+	public void saveSign(Sign sign, int slot, int spot){
+		config.load();	
+		config.setProperty("slots."+slot+".sign"+spot+".x",sign.getX());
+		config.setProperty("slots."+slot+".sign"+spot+".y",sign.getY());
+		config.setProperty("slots."+slot+".sign"+spot+".z",sign.getZ());
+		config.save();
+		refresh();
+	}
+	
 	/**
 	 * Handles player issued commands
 	 */
@@ -178,6 +249,17 @@ public class Main extends JavaPlugin{
 		Player player = (Player) sender;
 		//blackjack
 		if(cmdLabel.equalsIgnoreCase("blackjack")){
+			if (args.length == 2){
+				Sign sign = null;
+				Block block = player.getTargetBlock(null, 10000);
+				if(block.getState() instanceof Sign){
+					sign = (Sign) block.getState();
+					saveSign(sign,Integer.parseInt(args[0]),Integer.parseInt(args[1]));
+					blackjack.slots[Integer.parseInt(args[0])-1].setSign(Integer.parseInt(args[1]),sign);
+					return true;
+				}
+			}
+			
 			if(args.length == 0){
 				if(blackjack.getPlayers().contains(player)){
 					player.sendMessage(ChatColor.RED + "You are already in that game!");
