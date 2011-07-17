@@ -451,7 +451,11 @@ public void removePlayers(){
  * Pre-betting prep
  */
 public void prepBets(){
+	blackjack.clearSigns();
 	blackjack.prepBets();
+	for(Slot slot : blackjack.slots){
+		slot.bettingSigns(min);
+	}
 }
 
 /**

@@ -60,4 +60,18 @@ public class Slot {
 			sign2.update();
 		}
 	}
+	public void bettingSigns(int num){
+		sign1.setLine(1,"[BET]");
+		sign2.setLine(0,"Current Bet:");
+		sign2.setLine(1, num + "");
+		sign1.update();
+		sign2.update();
+	}
+	public Sign getSign(int i) {
+		switch(i){
+		default: return null;
+		case 1: return sign1;
+		case 2: return sign2;
+		}
+	}
 }

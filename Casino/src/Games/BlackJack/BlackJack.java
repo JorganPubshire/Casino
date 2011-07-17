@@ -74,7 +74,7 @@ public class BlackJack{
 		deal();
 	}
 
-	private void clearSigns() {
+	public void clearSigns() {
 		for(Slot slot:slots){
 			slot.clearSigns();
 		}
@@ -618,6 +618,16 @@ public class BlackJack{
 		for(CardPlayer cPlayer : players){
 			if(cPlayer.getPlayer().equals(player)){
 				return cPlayer;
+			}
+		}
+		return null;
+	}
+
+	public Slot matchSlot(Player player) {
+		CardPlayer cardplayer = match(player);
+		for(Slot slot : slotStatus.keySet()){
+			if(slotStatus.get(slot) != null && slotStatus.get(slot).equals(cardplayer)){
+				return slot;
 			}
 		}
 		return null;
