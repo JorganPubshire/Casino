@@ -42,3 +42,4 @@ v1.8:
 *Made console and block-based togglealbe (both can be active, but if neither are active, console automatically activates)
 *Players cannot place or break blocks (only if block-based is on)
 *Removed some debug text
+*Hitting a fence makes you leave the game
