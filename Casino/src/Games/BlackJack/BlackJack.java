@@ -33,6 +33,8 @@ public class BlackJack{
 	public boolean usingIconomy = false;
 	public Slot[] slots = new Slot[5];
 	public HashMap<Slot, CardPlayer> slotStatus = new HashMap<Slot, CardPlayer>();
+	public boolean block = false;
+	public boolean console = true;
 
 	/**
 	 * Loads the locations from the config file into the game
@@ -75,8 +77,10 @@ public class BlackJack{
 	}
 
 	public void clearSigns() {
-		for(Slot slot:slots){
-			slot.clearSigns();
+		if(block){
+			for(Slot slot:slots){
+				slot.clearSigns();
+			}
 		}
 	}
 
@@ -84,6 +88,7 @@ public class BlackJack{
 	 * Resets values after each hand
 	 */
 	public void endHand(){
+		clearSigns();
 		waiting.clear();
 		winners.clear();
 		bets.clear();
@@ -241,17 +246,19 @@ public class BlackJack{
 	 * @param player
 	 */
 	public void tpIn(CardPlayer player){
-		//checks for open slots
-		for(Slot loc : slots){
-			//checks if a slot is occupied
-			if(slotStatus.get(loc) == null){
-				//places the player in the slot
-				player.getPlayer().teleport(loc.getLoc());
-				slotStatus.put(loc, player);
-				return;
+		if(block){
+			//checks for open slots
+			for(Slot loc : slots){
+				//checks if a slot is occupied
+				if(slotStatus.get(loc) == null){
+					//places the player in the slot
+					player.getPlayer().teleport(loc.getLoc());
+					slotStatus.put(loc, player);
+					return;
+				}
 			}
+			player.getPlayer().sendMessage(ChatColor.RED + "No open slots!");
 		}
-		player.getPlayer().sendMessage(ChatColor.RED + "No open slots!");
 	}
 
 	/**
@@ -260,18 +267,20 @@ public class BlackJack{
 	 * @param player
 	 */
 	public void tpOut(CardPlayer player){
-		if(player.getOrigin() == null)
-			return;
-		//checks if the player is in a slot
-		if(slotStatus.containsValue(player)){
-			//finds which slot the player is in
-			for(Slot loc : slots){
-				if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
-					//removes the player from the slot
-					slotStatus.put(loc, null);
-					//returns the player to their original location
-					player.getPlayer().teleport(player.getOrigin());
-					return;
+		if(block){
+			if(player.getOrigin() == null)
+				return;
+			//checks if the player is in a slot
+			if(slotStatus.containsValue(player)){
+				//finds which slot the player is in
+				for(Slot loc : slots){
+					if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
+						//removes the player from the slot
+						slotStatus.put(loc, null);
+						//returns the player to their original location
+						player.getPlayer().teleport(player.getOrigin());
+						return;
+					}
 				}
 			}
 		}
@@ -283,17 +292,19 @@ public class BlackJack{
 	 * @param player
 	 */
 	public void tpOutNow(CardPlayer player){
-		//checks if the player is in a slot
-		if(slotStatus.containsValue(player)){
-			//finds which slot the player is in
-			for(Slot loc : slots){
-				if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
-					//removes the player from the slot
-					slotStatus.put(loc, null);
-					//returns the player to their original location
-					player.getPlayer().teleport(player.getOrigin());
-					player.setOrigin(null);
-					return;
+		if(block){
+			//checks if the player is in a slot
+			if(slotStatus.containsValue(player)){
+				//finds which slot the player is in
+				for(Slot loc : slots){
+					if(slotStatus.get(loc) != null && slotStatus.get(loc).equals(player)){
+						//removes the player from the slot
+						slotStatus.put(loc, null);
+						//returns the player to their original location
+						player.getPlayer().teleport(player.getOrigin());
+						player.setOrigin(null);
+						return;
+					}
 				}
 			}
 		}
@@ -500,12 +511,18 @@ public class BlackJack{
 		for(Card card : player.getHand()){
 			string += card.toString() + ", ";
 			sum += card.getValue();
-			if(slot!=null){
-				slot.write(line,card.toString());
-				line++;
+			if(block){
+				if(slot!=null){
+					slot.write(line,card.toString());
+					line++;
+				}
 			}
 		}
 		sum += aceBonus(player);
+		if(block){
+			if(slot!=null)
+				slot.concat(line - 1, " (" + sum + ")");
+		}
 		ChatColor color;
 		if(sum <= 21){
 			color = ChatColor.GREEN;
@@ -513,7 +530,9 @@ public class BlackJack{
 		else{
 			color = ChatColor.RED;
 		}
-		player.getPlayer().sendMessage(ChatColor.GREEN + string + color + " (" + sum + ")");
+		if(console){
+			player.getPlayer().sendMessage(ChatColor.GREEN + string + color + " (" + sum + ")");
+		}
 	}
 
 	/**

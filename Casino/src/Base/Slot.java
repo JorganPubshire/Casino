@@ -74,4 +74,8 @@ public class Slot {
 		case 2: return sign2;
 		}
 	}
+	public void concat(int line, String string) {
+		sign2.setLine(line, sign2.getLine(line) + string);		
+		sign2.update();
+	}
 }

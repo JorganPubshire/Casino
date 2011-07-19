@@ -1,4 +1,5 @@
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -18,13 +19,19 @@ public class BlockListener extends PlayerListener{
 	}
 
 	public void onPlayerInteract(PlayerInteractEvent event){
+		if(!plugin.block){
+			return;
+		}
 		Action action = event.getAction();
 		Player player = event.getPlayer();
 		CardPlayer cardplayer = plugin.blackjack.match(player);
 		Block block = event.getClickedBlock();
 		Sign sign = null;
-		if(block == null){
+		if(block == null || cardplayer == null){
 			return;
+		}
+		if(block.getType().equals(Material.FENCE)){
+			player.chat("leave");
 		}
 		if(block.getState()  instanceof Sign){
 			sign = (Sign) block.getState();

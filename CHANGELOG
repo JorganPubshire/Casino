@@ -37,3 +37,8 @@ v1.6:
 
 v1.7:
 *Surprise update to Block-based gameplay: BETTING!
+
+v1.8:
+*Made console and block-based togglealbe (both can be active, but if neither are active, console automatically activates)
+*Players cannot place or break blocks (only if block-based is on)
+*Removed some debug text
