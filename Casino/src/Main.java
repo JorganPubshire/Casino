@@ -257,12 +257,17 @@ public class Main extends JavaPlugin{
 		//blackjack
 		if(cmdLabel.equalsIgnoreCase("blackjack")){
 			if (args.length == 2){
+				if(blackjack.getPlayers().size()!=0){
+					player.sendMessage(ChatColor.RED + "That cannot be done while a game is in progress!");
+					return true;
+				}
 				Sign sign = null;
 				Block block = player.getTargetBlock(null, 10000);
 				if(block.getState() instanceof Sign){
 					sign = (Sign) block.getState();
 					saveSign(sign,Integer.parseInt(args[0]),Integer.parseInt(args[1]));
 					blackjack.slots[Integer.parseInt(args[0])-1].setSign(Integer.parseInt(args[1]),sign);
+					player.sendMessage(ChatColor.YELLOW + "Sign " + args[1] + " saved properly to slot " + args[0] + "!");
 					return true;
 				}
 			}
@@ -287,7 +292,7 @@ public class Main extends JavaPlugin{
 					addPlayer(player);
 				}
 			}
-			else{
+			else if(args.length == 1){
 				if(blackjack.getPlayers().size()!=0){
 					player.sendMessage(ChatColor.RED + "That cannot be done while a game is in progress!");
 					return true;

@@ -61,11 +61,13 @@ public class Slot {
 		}
 	}
 	public void bettingSigns(int num){
-		sign1.setLine(1,"[BET]");
-		sign2.setLine(0,"Current Bet:");
-		sign2.setLine(1, num + "");
-		sign1.update();
-		sign2.update();
+		if(sign1 != null && sign2 != null){
+			sign1.setLine(1,"[BET]");
+			sign2.setLine(0,"Current Bet:");
+			sign2.setLine(1, num + "");
+			sign1.update();
+			sign2.update();
+		}
 	}
 	public Sign getSign(int i) {
 		switch(i){
@@ -75,7 +77,9 @@ public class Slot {
 		}
 	}
 	public void concat(int line, String string) {
-		sign2.setLine(line, sign2.getLine(line) + string);		
-		sign2.update();
+		if(line <= 3){
+			sign2.setLine(line, sign2.getLine(line) + string);		
+			sign2.update();
+		}
 	}
 }

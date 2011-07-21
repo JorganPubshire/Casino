@@ -35,6 +35,7 @@ public class BlackJack{
 	public HashMap<Slot, CardPlayer> slotStatus = new HashMap<Slot, CardPlayer>();
 	public boolean block = false;
 	public boolean console = true;
+	public ArrayList<CardPlayer> ties = new ArrayList<CardPlayer>();
 
 	/**
 	 * Loads the locations from the config file into the game
@@ -121,6 +122,11 @@ public class BlackJack{
 		for(CardPlayer player : winners){
 			if(players.contains(player)){
 				player.giveCash(bets.get(player)*2);
+			}
+		}
+		for(CardPlayer player : ties){
+			if(players.contains(player)){
+				player.giveCash(bets.get(player)*1);
 			}
 		}
 	}
@@ -397,10 +403,23 @@ public class BlackJack{
 			sum = 0;
 		}
 		goal = sum;
+		String dealerMessage = ChatColor.YELLOW + "The dealer has ";
+		for(Card card : dealer.getHand()){
+			dealerMessage += card;
+			dealerMessage += ", ";
+		}
+		dealerMessage += "(" + sum + ")";
+		
+		for(Player player : getPlayers()){
+			player.sendMessage(dealerMessage);
+		}
 		//lists all players that beat the dealer
 		for(CardPlayer player : finals.keySet()){
 			if (finals.get(player) > goal){
 				winners.add(player);
+			}
+			else if(finals.get(player) == goal){
+				ties.add(player);
 			}
 		}
 	}
@@ -574,6 +593,9 @@ public class BlackJack{
 			//player wins
 			if(winners.contains(player)){
 				string += ChatColor.GREEN + "You win! (" + bets.get(player) + ")";
+			}
+			else if(ties.contains(player)){
+				string += ChatColor.YELLOW + "You tied! (0)";
 			}
 			//player loses
 			else {

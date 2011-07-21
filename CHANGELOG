@@ -43,3 +43,9 @@ v1.8:
 *Players cannot place or break blocks (only if block-based is on)
 *Removed some debug text
 *Hitting a fence makes you leave the game
+
+v1.9:
+*Fixed bug in block-based setup
+*Added draw (if you tie with the dealer no money is lost or won unless you busted or got an instant blackjack)
+*The dealer's hand is now revealed to each player
+*Added a configurable starting amount for non-iConomy users
