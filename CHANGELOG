@@ -49,3 +49,10 @@ v1.9:
 *Added draw (if you tie with the dealer no money is lost or won unless you busted or got an instant blackjack)
 *The dealer's hand is now revealed to each player
 *Added a configurable starting amount for non-iConomy users
+
+v2.0:
+*Added configurable maximum bet
+*Added number orbit for betting signs
+*Added basic slot machines (much expansion to come)
+*Made money display using server's currency system
+*Many a bugfix
