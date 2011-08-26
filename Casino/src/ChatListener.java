@@ -1,6 +1,10 @@
+
+
 import org.bukkit.ChatColor;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerListener;
+
+import com.iConomy.iConomy;
 
 
 public class ChatListener extends PlayerListener{
@@ -70,6 +74,10 @@ public class ChatListener extends PlayerListener{
 				int bet = Integer.parseInt(event.getMessage().split(" ")[1]);
 				if(bet < plugin.min){
 					event.getPlayer().sendMessage(ChatColor.RED + "You must bet at least " + plugin.min + " dollar(s)");
+					return;
+				}
+				if(bet > plugin.max){
+					event.getPlayer().sendMessage(ChatColor.RED + "You cannot bet more than " + iConomy.format(plugin.max) + ".");
 					return;
 				}
 				plugin.better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);

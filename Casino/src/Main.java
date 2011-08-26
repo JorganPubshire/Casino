@@ -1,7 +1,10 @@
+
+
 import java.io.File;
 import java.util.ArrayList;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -42,9 +45,15 @@ public class Main extends JavaPlugin{
 	File data = new File("plugins/Casino/config.yml");
 	Configuration config = new Configuration(data);
 	int min = 0;
+	int max = 0;
 	boolean console = true;
 	boolean block = false;
+	public Server server = getServer();
 
+	public Server getTheServer(){
+		return server;
+	}
+	
 	/**
 	 * Code called before plugin is disabled
 	 */
@@ -89,6 +98,12 @@ public class Main extends JavaPlugin{
 		}
 		if(!config.getKeys().contains("minBet")){
 			config.setProperty("minBet",1);
+		}
+		if(!config.getKeys().contains("maxBet")){
+			config.setProperty("maxBet", 100);
+		}
+		if(!config.getKeys().contains("starting amount")){
+			config.setProperty("starting amount", 100);
 		}
 
 		if(config.getKeys("slots") == null){
@@ -176,7 +191,7 @@ public class Main extends JavaPlugin{
 			double z = config.getDouble("slots."+i+".z", 0);
 			float pitch = new Float(config.getString("slots."+i+".pitch"));
 			float yaw = new Float(config.getString("slots."+i+".yaw"));
-			loc = new Location(getServer().getWorlds().get(0),x,y,z,pitch,yaw);
+			loc = new Location(getServer().getWorld(config.getString("slots."+i+".world")),x,y,z,pitch,yaw);
 			double firstX = config.getDouble("slots."+i+".sign1.x", 0);
 			double firstY = config.getDouble("slots."+i+".sign1.y", 0);
 			double firstZ = config.getDouble("slots."+i+".sign1.z", 0);
@@ -194,7 +209,9 @@ public class Main extends JavaPlugin{
 			blackjack.slots[i-1] = new Slot(loc,sign1,sign2);
 		}
 
+		blackjack.start = config.getInt("starting amount", 0);
 		min = config.getInt("minBet", 0);
+		max = config.getInt("maxBet", 0);
 		console = config.getBoolean("console-based", false);
 		block = config.getBoolean("block-based", false);
 		if(block == console && block == false){
@@ -289,6 +306,7 @@ public class Main extends JavaPlugin{
 					}
 				}
 				else{
+					refresh();
 					addPlayer(player);
 				}
 			}
@@ -363,7 +381,11 @@ public class Main extends JavaPlugin{
 				}
 				int bet = Integer.parseInt(args[0]);
 				if(bet < min){
-					player.sendMessage(ChatColor.RED + "You must bet at least " + min + " dollar(s)");
+					player.sendMessage(ChatColor.RED + "You must bet at least " + iConomy.format(min) + ".");
+					return true;
+				}
+				if(bet > max){
+					player.sendMessage(ChatColor.RED + "You cannot bet more than " + iConomy.format(max) + ".");
 					return true;
 				}
 				better.getPlayer().sendMessage(ChatColor.GOLD + "You bet " + bet);
@@ -501,7 +523,7 @@ public class Main extends JavaPlugin{
 			bettingAI();
 		}
 		else{
-			better.getPlayer().sendMessage(ChatColor.YELLOW + "Please place your bet. (You have " + better.getCash() + " dollars)");
+			better.getPlayer().sendMessage(ChatColor.YELLOW + "Please place your bet. (You have " + iConomy.format(better.getCash()) + ")");
 		}
 	}
 

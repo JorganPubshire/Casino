@@ -1,3 +1,5 @@
+
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -7,18 +9,26 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerListener;
 
+import couk.Adamki11s.Extras.Extras.Extras;
+import couk.Adamki11s.Extras.Scheduler.ExtrasScheduler;
+
 import Base.CardPlayer;
 import Base.Slot;
 
 
 public class BlockListener extends PlayerListener{
 	Main plugin;
+	Extras e = new Extras("Casino");
+	ExtrasScheduler s = new ExtrasScheduler();
+	PlayerInteractEvent ev;
 
 	public BlockListener(Main instance){
 		plugin = instance;
+		s.InitialiseScheduler(plugin.getServer(), plugin.getServer().getPluginManager().getPlugin("Casino"));
 	}
 
 	public void onPlayerInteract(PlayerInteractEvent event){
+		ev = event;
 		if(!plugin.block){
 			return;
 		}
@@ -27,7 +37,14 @@ public class BlockListener extends PlayerListener{
 		CardPlayer cardplayer = plugin.blackjack.match(player);
 		Block block = event.getClickedBlock();
 		Sign sign = null;
-		if(block == null || cardplayer == null){
+		if(block == null){
+			return;
+		}
+		if(block.getType().equals(Material.LEVER)){
+//			s.scheduleAsyncDelayedTasked(100, this.getClass(), cancel(), "Cancelation");
+			new Slots(block, event, plugin);
+		}
+		if(cardplayer == null){
 			return;
 		}
 		if(block.getType().equals(Material.FENCE)){
@@ -91,14 +108,24 @@ public class BlockListener extends PlayerListener{
 					if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
 						int current = Integer.parseInt(sign.getLine(1));
 						if(current < cardplayer.getCash()){
-							sign.setLine(1,current + 1 + "");
+							if(current + 1 > plugin.max){
+								sign.setLine(1, plugin.min + "");
+							}
+							else{
+								sign.setLine(1,current + 1 + "");
+							}
 							sign.update();
 						}
 					}
 					else if(event.getAction().equals(Action.RIGHT_CLICK_BLOCK)){
 						int current = Integer.parseInt(sign.getLine(1));
-						if(current > plugin.min){
-							sign.setLine(1,current - 1 + "");
+						if(current >= plugin.min){
+							if(current - 1 < plugin.min){
+								sign.setLine(1, plugin.max + "");
+							}
+							else{
+								sign.setLine(1,current - 1 + "");
+							}
 							sign.update();
 						}
 					}
@@ -106,4 +133,9 @@ public class BlockListener extends PlayerListener{
 			}
 		}
 	}
+
+//	private String cancel() {
+//		ev.setCancelled(true);
+//		return "Canceled";
+//	}
 }

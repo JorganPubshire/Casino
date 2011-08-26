@@ -56,3 +56,8 @@ v2.0:
 *Added basic slot machines (much expansion to come)
 *Made money display using server's currency system
 *Many a bugfix
+
+v2.1:
+*Requires dispenser block under diamond for slot machines
+*Prevents slots from destruction
+*Added multiple win levels

@@ -36,6 +36,7 @@ public class BlackJack{
 	public boolean block = false;
 	public boolean console = true;
 	public ArrayList<CardPlayer> ties = new ArrayList<CardPlayer>();
+	public int start = 0;
 
 	/**
 	 * Loads the locations from the config file into the game
@@ -90,6 +91,7 @@ public class BlackJack{
 	 */
 	public void endHand(){
 		clearSigns();
+		ties.clear();
 		waiting.clear();
 		winners.clear();
 		bets.clear();
@@ -171,7 +173,7 @@ public class BlackJack{
 		//checks if the player is already playing
 		if(!playerNames.contains(player)){
 			//creates a new player
-			boolean added = addPlayer(new CardPlayer(100,"BlackJack",player));
+			boolean added = addPlayer(new CardPlayer(start,"BlackJack",player));
 			//the game is full
 			if(!added){
 				player.sendMessage("Sorry, there is no room in that game for you.");
@@ -398,17 +400,17 @@ public class BlackJack{
 			dealer.hand.add(card);
 			sum += card.getValue();
 		}
-		//dealer busts
-		if(sum > 21){
-			sum = 0;
-		}
-		goal = sum;
 		String dealerMessage = ChatColor.YELLOW + "The dealer has ";
 		for(Card card : dealer.getHand()){
 			dealerMessage += card;
 			dealerMessage += ", ";
 		}
 		dealerMessage += "(" + sum + ")";
+		//dealer busts
+		if(sum > 21){
+			sum = 0;
+		}
+		goal = sum;
 		
 		for(Player player : getPlayers()){
 			player.sendMessage(dealerMessage);
@@ -420,6 +422,8 @@ public class BlackJack{
 			}
 			else if(finals.get(player) == goal){
 				ties.add(player);
+			}
+			else{
 			}
 		}
 	}
